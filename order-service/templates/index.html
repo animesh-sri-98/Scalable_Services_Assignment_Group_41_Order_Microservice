@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders Microservice</title>
+    <style>
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2; /* Lighter background color */
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 800px;
+    margin: 50px auto; /* Center the container vertically */
+    text-align: center;
+    padding: 40px;
+    background-color: #9da7a0; /* White background */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Slightly stronger shadow */
+}
+
+h2 {
+    color: #333;
+    margin-bottom: 20px; /* Added margin at the bottom */
+}
+
+.form-group {
+    margin-bottom: 30px; /* Increased bottom margin for form elements */
+}
+
+input[type="text"],
+input[type="email"] {
+    width: calc(100% - 22px);
+    padding: 15px; /* Increased padding */
+    margin: 10px 0;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px; /* Slightly rounder corners */
+    background-color: #f9f9f9; /* Light gray background */
+}
+
+button.btn {
+    margin-top: 20px; /* Increased top margin for the button */
+    padding: 15px 25px; /* Increased padding for the button */
+    font-size: 18px; /* Slightly larger font size */
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Subtle box shadow */
+}
+
+button.btn:hover {
+    background-color: #45a049;
+}
+
+.response {
+    margin-top: 30px; /* Increased top margin for the response box */
+    padding: 20px; /* Increased padding for the response box */
+    background-color: #f9f9f9; /* Light gray background */
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Subtle box shadow */
+}
+</style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Order Management Service</h2>
+        <div class="form-group">
+            <label for="userId">User ID:</label>
+            <input type="text" id="userId">
+        </div>
+        <div class="form-group">
+            <label for="productId">Product ID:</label>
+            <input type="text" id="productId">
+        </div>
+        <button class="btn" onclick="createOrder()">Create Order</button>
+        <button class="btn" onclick="getAllOrders()">Get All Orders</button>
+        <button class="btn" onclick="getOrderStatus()">Get Order Status</button>
+        <button class="btn" onclick="updateOrder()">Update Order Status</button>
+        <button class="btn" onclick="getOrdersByOrderId()">Get Order By Orderid</button>
+        <button class="btn" onclick="deleteOrder()">Delete Order</button>
+        <button class="btn" onclick="getProductDetailsFromOrder()">Get Product Details from Order</button>
+        <button class="btn" onclick="getUserDetailsFromOrder()">Get User Details from Order</button>
+        <div class="response" id="response"></div>
+    </div>
+
+
+    <script>
+        function createOrder() {
+            var userId = document.getElementById("userId").value;
+            var productId = document.getElementById("productId").value;
+
+            fetch('/orders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    user_id: userId,
+                    product_id: productId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("response").innerText = data.message + " Order ID: " + data.order_id;
+            })
+            .catch(error => {
+                document.getElementById("response").innerText = "Error: " + error.message;
+            });
+        }
+
+        // Function to get all orders
+        function getAllOrders() {
+            fetch('/orders', {
+                method: 'GET'
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("response").innerText = JSON.stringify(data);
+            })
+            .catch(error => {
+                document.getElementById("response").innerText = "Error: " + error.message;
+            });
+        }
+
+        // Function to get order status by order ID
+        function getOrderStatus() {
+            var orderId = prompt("Enter Order ID:");
+            if (orderId) {
+                fetch(`/orders/${orderId}/status`, {
+                    method: 'GET'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("response").innerText = JSON.stringify(data);
+                })
+                .catch(error => {
+                    document.getElementById("response").innerText = "Error: " + error.message;
+                });
+            }
+        }
+
+        // Function to update order status by order ID
+        function updateOrder() {
+            var orderId = prompt("Enter Order ID:");
+            var newStatus = prompt("Enter New Status:");
+            if (orderId && newStatus) {
+                fetch(`/orders/${orderId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        status: newStatus
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("response").innerText = data.message;
+                })
+                .catch(error => {
+                    document.getElementById("response").innerText = "Error: " + error.message;
+                });
+            }
+        }
+
+        // Function to delete order by user ID
+        function deleteOrder() {
+            var userId = prompt("Enter User ID:");
+            if (userId) {
+                fetch(`/orders/${userId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("response").innerText = data.message;
+                })
+                .catch(error => {
+                    document.getElementById("response").innerText = "Error: " + error.message;
+                });
+            }
+        }
+
+        // Function to get product details from order by order ID
+        function getProductDetailsFromOrder() {
+            var orderId = prompt("Enter Order ID:");
+            if (orderId) {
+                fetch(`/orders/${orderId}/products`, {
+                    method: 'GET'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("response").innerText = JSON.stringify(data);
+                })
+                .catch(error => {
+                    document.getElementById("response").innerText = "Error: " + error.message;
+                });
+            }
+        }
+
+        // Function to get user details from order by order ID
+        function getUserDetailsFromOrder() {
+            var orderId = prompt("Enter Order ID:");
+            if (orderId) {
+                fetch(`/orders/${orderId}/users`, {
+                    method: 'GET'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("response").innerText = JSON.stringify(data);
+                })
+                .catch(error => {
+                    document.getElementById("response").innerText = "Error: " + error.message;
+                });
+            }
+        }
+
+        function getOrdersByOrderId() {
+            var orderId = prompt("Enter Order ID:");
+            if (orderId) {
+                fetch(`/orders/${orderId}`, {
+                method: 'GET'
+            })
+            .then(response => response.json())
+                .then(data => {
+                    document.getElementById("response").innerText = JSON.stringify(data);
+                })
+                .catch(error => {
+                    document.getElementById("response").innerText = "Error: " + error.message;
+                });
+
+            }
+            
+        }
+    </script>
+</body>
+
+</html>
