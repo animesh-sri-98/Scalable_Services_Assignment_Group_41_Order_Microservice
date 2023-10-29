@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-microservice
+  namespace: scalable-svc
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: order-microservice
+  template:
+    metadata:
+      labels:
+        app: order-microservice
+    spec:
+      containers:
+      - name: order-microservice
+        image: animeshsri98/order-microservice:latest
+        ports:
+        - containerPort: 9997
